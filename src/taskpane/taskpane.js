@@ -35,7 +35,6 @@ async function handleCategoryChange() {
 
   document.getElementById("logStyleContentButton").disabled = !isDataLoaded || !selectedCategory;
 
-  // Add auto-copy functionality without showing message
   if (selectedCategory && categoryData[selectedCategory]) {
     const clipboardString = formatCategoryData(selectedCategory);
     await silentCopyToClipboard(clipboardString);
@@ -349,16 +348,13 @@ async function clearCurrentContent() {
     return;
   }
 
-  // Clear only the selected category
   categoryData[selectedCategory] = [];
 
-  // Update the display for the current category
   const contentElement = document.querySelector(`#${selectedCategory}Content .content-area`);
   if (contentElement) {
     contentElement.innerHTML = "";
   }
 
-  // Update clipboard with empty object for the current category
   const clipboardString = "{}";
   await silentCopyToClipboard(clipboardString);
 
