@@ -65,8 +65,10 @@ async function silentCopyToClipboard(text) {
 }
 
 function normalizeText(text) {
+  // Remove leading dot and trim whitespace
   return text
     .trim()
+    .replace(/^\.\s*/, "") // Remove leading dot and any whitespace after it
     .replace(/\s+/g, " ")
     .replace(/[^\x20-\x7E]/g, "");
 }
@@ -123,7 +125,7 @@ async function loadAllParagraphsData() {
           allParagraphsData.push({
             key: fullNumbering,
             value: text,
-            originalText: paragraph.text.trim(),
+            originalText: paragraph.text.trim().replace(/^\.\s*/, ""), // Remove leading dot
             isListItem: true,
             index: i,
             level: level,
@@ -135,7 +137,7 @@ async function loadAllParagraphsData() {
           allParagraphsData.push({
             key: key,
             value: text,
-            originalText: paragraph.text.trim(),
+            originalText: paragraph.text.trim().replace(/^\.\s*/, ""), // Remove leading dot
             isListItem: false,
             index: i,
             level: -1,
@@ -197,7 +199,7 @@ async function getListInfoFromSelection() {
           await context.sync();
         }
 
-        const selectedText = selectedParagraph.text.trim();
+        const selectedText = selectedParagraph.text.trim().replace(/^\.\s*/, ""); // Remove leading dot
         const normalizedSelectedText = normalizeText(selectedText);
 
         const matchingParagraphs = allParagraphsData.filter(
