@@ -6,21 +6,88 @@ let categoryData = {
 let allParagraphsData = [];
 let isDataLoaded = false;
 
+let documentContentHash = "";
+let documentParagraphsState = [];
 Office.onReady((info) => {
   if (info.host === Office.HostType.Word) {
     const logStyleContentButton = document.getElementById("logStyleContentButton");
     const categorySelect = document.getElementById("categorySelect");
+    const reloadButton = document.getElementById("reloadButton");
+    const dismissButton = document.getElementById("dismissNotification");
 
     logStyleContentButton.disabled = true;
     logStyleContentButton.onclick = getListInfoFromSelection;
     document.getElementById("clearContentButton").onclick = clearCurrentContent;
+    reloadButton.onclick = handleReloadContent;
+    if (dismissButton) {
+      dismissButton.onclick = dismissChangeNotification;
+    }
 
     categorySelect.onchange = handleCategoryChange;
     handleCategoryChange();
 
+    setInitialContentHash();
+    setInterval(checkForDocumentChanges, 2000);
+
     loadAllParagraphsData();
   }
 });
+async function setInitialContentHash() {
+  try {
+    await Word.run(async (context) => {
+      const body = context.document.body;
+      body.load("text");
+      await context.sync();
+      documentContentHash = await calculateHash(body.text);
+    });
+  } catch (error) {
+    console.error("Error setting initial content hash:", error);
+  }
+}
+
+function dismissChangeNotification() {
+  const changeNotification = document.getElementById("changeNotification");
+  if (changeNotification) {
+    changeNotification.style.display = "none";
+  }
+}
+async function calculateHash(text) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(text);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+async function checkForDocumentChanges() {
+  try {
+    await Word.run(async (context) => {
+      const body = context.document.body;
+      body.load("text");
+      await context.sync();
+
+      const currentHash = await calculateHash(body.text);
+
+      if (currentHash !== documentContentHash) {
+        documentContentHash = currentHash;
+        const changeNotification = document.getElementById("changeNotification");
+        if (changeNotification) {
+          changeNotification.style.display = "block";
+        }
+      }
+    });
+  } catch (error) {
+    console.error("Error checking for document changes:", error);
+  }
+}
+async function handleReloadContent() {
+  const changeNotification = document.getElementById("changeNotification");
+  if (changeNotification) {
+    changeNotification.style.display = "none";
+  }
+  await setInitialContentHash();
+  await loadAllParagraphsData();
+}
 
 async function handleCategoryChange() {
   const categorySelect = document.getElementById("categorySelect");
@@ -65,10 +132,9 @@ async function silentCopyToClipboard(text) {
 }
 
 function normalizeText(text) {
-  // Remove leading dot and trim whitespace
   return text
     .trim()
-    .replace(/^\.\s*/, "") // Remove leading dot and any whitespace after it
+    .replace(/^\.\s*/, "")
     .replace(/\s+/g, " ")
     .replace(/[^\x20-\x7E]/g, "");
 }
@@ -125,7 +191,7 @@ async function loadAllParagraphsData() {
           allParagraphsData.push({
             key: fullNumbering,
             value: text,
-            originalText: paragraph.text.trim().replace(/^\.\s*/, ""), // Remove leading dot
+            originalText: paragraph.text.trim().replace(/^\.\s*/, ""),
             isListItem: true,
             index: i,
             level: level,
@@ -137,7 +203,7 @@ async function loadAllParagraphsData() {
           allParagraphsData.push({
             key: key,
             value: text,
-            originalText: paragraph.text.trim().replace(/^\.\s*/, ""), // Remove leading dot
+            originalText: paragraph.text.trim().replace(/^\.\s*/, ""),
             isListItem: false,
             index: i,
             level: -1,
@@ -199,7 +265,7 @@ async function getListInfoFromSelection() {
           await context.sync();
         }
 
-        const selectedText = selectedParagraph.text.trim().replace(/^\.\s*/, ""); // Remove leading dot
+        const selectedText = selectedParagraph.text.trim().replace(/^\.\s*/, "");
         const normalizedSelectedText = normalizeText(selectedText);
 
         const matchingParagraphs = allParagraphsData.filter(

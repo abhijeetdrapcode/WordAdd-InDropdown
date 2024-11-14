@@ -5,11 +5,52 @@
     <title>Word Add-in</title>
     <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
     <script src="taskpane.js"></script>
+    <script src="login.js"></script>
     <link rel="stylesheet" href="taskpane.css" />
+    <style>
+
+    </style>
   </head>
   <body>
     <div class="container">
+      <!-- User Section (initially hidden) -->
+      <div id="userSection" class="user-section" style="display: none;">
+        <div class="user-info">
+          Welcome, <span id="userEmail"></span>
+        </div>
+        <button id="logoutBtn" class="logout-btn">Logout</button>
+      </div>
+
+      <!-- Login Button (initially visible) -->
+      <div id="loginButtonContainer">
+        <button id="loginBtn" class="btn-login" style="margin-bottom: 10px;">Login</button>
+      </div>
+
+      <!-- Login Form Overlay -->
+      <div id="loginOverlay" class="login-overlay">
+        <div class="login-form">
+          <button id="closeLogin" class="close-btn">&times;</button>
+          <h2>Login</h2>
+          <form id="loginForm">
+            <div class="form-group">
+              <label for="email">Email:</label>
+              <input type="email" id="email" required>
+            </div>
+            <div class="form-group">
+              <label for="password">Password:</label>
+              <input type="password" id="password" required>
+            </div>
+            <button type="submit" class="btn-login">Login</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Rest of your existing content -->
       <div id="copyMessage">Text has been copied successfully!</div>
+      <div id="changeNotification" style="display: none; margin-bottom: 7px;">
+        <!-- Your existing notification content -->
+      </div>
+
       <div class="control-group">
         <select id="categorySelect" class="small-text">
           <option value="representation" selected>Representation and Warranty</option>
@@ -17,7 +58,7 @@
           <option value="postClosing">Post Closing</option>
         </select>
         <button id="logStyleContentButton" class="small-text">Copy Selected Text</button>
-        <button id="clearContentButton" class="small-text">Clear</button>
+        <button id="clearContentButton" class="small-text" style="background-color: rgb(218, 15, 0);">Clear</button>
       </div>
       <div class="content-sections">
         <div id="closingContent" class="category-content">
@@ -34,5 +75,9 @@
         </div>
       </div>
     </div>
+
+    <script>
+
+    </script>
   </body>
 </html>
